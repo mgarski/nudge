@@ -116,7 +116,7 @@ class JsonErrorHandler(object):
         return code, self.content_type, \
             nudge.json.json_encode(content), self.headers
 
-def handle_exception(exp, exp_handlers, default_handler=None):
+def handle_exception(exp, exp_handlers, default_handler):
     # Check if this endpoint can handle this exception
     if exp_handlers:
         exps = inspect.getmro(exp.__class__)
@@ -145,8 +145,8 @@ def handle_exception(exp, exp_handlers, default_handler=None):
                 return (exp_handler.code, exp_handler.content_type,
                         exp_handler.content, exp_handler.headers)
 
-    _log.exception("Unhandled exception class: %s", exp.__class__)
-    raise exp
+    # endpoint does not define a handler, return None
+    return None
 
 class HTTPException(Exception):
 

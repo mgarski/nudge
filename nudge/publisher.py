@@ -413,11 +413,12 @@ class ServicePublisher(object):
             # fallback to the self._options.default_error_response, which
             # is guaranteed to be valid at app initialization.
             #
-            if endpoint and endpoint.exceptions:
+            if endpoint:
                 try:
-                    error_response = handle_exception(e, endpoint.exceptions, default_handler=self._options.default_error_handler)
+                    error_response = handle_exception(
+                        e, endpoint.exceptions,
+                        self._options.default_error_handler)
                 except (Exception), e:
-                    # TODO this may log too loudly
                     _log.exception(
                         "Endpoint %s failed to handle exception" % endpoint.name
                     )
@@ -534,7 +535,6 @@ def serve(service_description, args=None):
         endpoints=service_description,
         debug=options.debug
     )
-    sp = nudge.log.LoggingMiddleware(sp)
 
     port = int(options.port)
     if str(options.server).strip().lower() == 'paste':
