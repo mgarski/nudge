@@ -38,7 +38,7 @@ __all__ = [
     'Dict',
 ]
 
-class ValidationError(BaseException):
+class ValidationError(Exception):
     def __init__(self, message=None):
         self.message = message
 
