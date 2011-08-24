@@ -97,7 +97,7 @@ class JsonErrorHandler(object):
     content_type = DEFAULT_ERROR_CONTENT_TYPE
     content = DEFAULT_ERROR_CONTENT
     headers = {}
-    def __call__(self, exp):
+    def __call__(self, exp, endpoint):
         code = self.code
         message = exp.message
         if isinstance(exp, HTTPException):
@@ -116,30 +116,30 @@ class JsonErrorHandler(object):
         return code, self.content_type, \
             nudge.json.json_encode(content), self.headers
 
-def handle_exception(exp, exp_handlers, default_handler):
+def handle_exception(exp, endpoint, default_handler):
     # Check if this endpoint can handle this exception
-    if exp_handlers:
+    if endpoint.exceptions:
         exps = inspect.getmro(exp.__class__)
         exp_class = None
 
         for clazz in exps:
-            if clazz in exp_handlers:
+            if clazz in endpoint.exceptions:
                 exp_class = clazz
                 break
 
         if exp_class:
-            exp_handler = exp_handlers[exp_class]
+            exp_handler = endpoint.exceptions[exp_class]
             # todo: don't hardcode the jsonerror handler
             if isinstance(exp_handler, int):
                 handler = default_handler or JsonErrorHandler()
                 handler.code = exp_handler
                 # replacing the handler so we only have to create the instance the first time
-                exp_handlers[exp_class] = handler
-                return handler(exp)
+                endpoint.exceptions[exp_class] = handler
+                return handler(exp, endpoint)
             elif callable(exp_handler):
                 # TODO maybe give e the req and start response, maybe add
                 # a finished var to track if e handled everything
-                return exp_handler(exp)
+                return exp_handler(exp, endpoint)
             else:
                 # Handle 'simple' tuple based exception handler (not callable)
                 return (exp_handler.code, exp_handler.content_type,

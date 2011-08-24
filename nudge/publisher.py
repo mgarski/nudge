@@ -419,7 +419,7 @@ class ServicePublisher(object):
             if endpoint:
                 try:
                     error_response = handle_exception(
-                        e, endpoint.exceptions,
+                        e, endpoint,
                         self._options.default_error_handler)
                 except (Exception), e:
                     _log.exception(
@@ -430,7 +430,7 @@ class ServicePublisher(object):
             if not error_response:
                 try:
                     # Try one more time to handle a base exception
-                    error_response = self._options.default_error_handler(e)
+                    error_response = self._options.default_error_handler(e, endpoint)
                 except (Exception), e:
                     _log.error(
                         "Default error handler failed to handle exception")
