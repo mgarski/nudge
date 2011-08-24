@@ -363,7 +363,8 @@ class ServicePublisher(object):
 
             if not match:
                 # TODO: Handle HTTPException in new world exceptions
-                raise HTTPException(404)
+                raise HTTPException(404, message='endpoint %s not defined' %
+                                                 endpoint.name)
                 #
                 # Fallback app is untested with WSGI/EVENTLET
                 # FIXTHIS!!
@@ -563,4 +564,3 @@ def serve(service_description, args=None):
             sp,
             max_size=100,
         )
-
