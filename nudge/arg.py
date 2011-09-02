@@ -61,6 +61,10 @@ class Arg(object):
             elif inargs and self.name in inargs:
                 exists = True
                 data = inargs[self.name]
+            # Query string args will come in list format, take the first.
+            # Unless of course we are expecting a list from the json body.
+            if type(data) in [types.ListType] and not isinstance(self, List):
+                data = data[0]
             # Default assumes optional=True
             if not data:
                 if self.optional:
@@ -73,10 +77,6 @@ class Arg(object):
                     400, 
                     self.name + msg
                 )
-            # Query string args will come in list format, take the first.
-            # Unless of course we are expecting a list from the json body.
-            if type(data) in [types.ListType] and not isinstance(self, List):
-                data = data[0]
             try:
                 return self.validator(data)
             except (validate.ValidationError), e:
