@@ -97,7 +97,7 @@ class JsonErrorHandler(object):
     content_type = DEFAULT_ERROR_CONTENT_TYPE
     content = DEFAULT_ERROR_CONTENT
     headers = {}
-    def __call__(self, exp, endpoint):
+    def __call__(self, exp):
         code = self.code
         message = exp.message
         if isinstance(exp, HTTPException):
@@ -118,7 +118,8 @@ class JsonErrorHandler(object):
 
 def handle_exception(exp, endpoint, default_handler):
     # Check if this endpoint can handle this exception
-    if endpoint.exceptions:
+    exp_handler = default_handler
+    if endpoint and endpoint.exceptions:
         exps = inspect.getmro(exp.__class__)
         exp_class = None
 
@@ -129,21 +130,21 @@ def handle_exception(exp, endpoint, default_handler):
 
         if exp_class:
             exp_handler = endpoint.exceptions[exp_class]
-            # todo: don't hardcode the jsonerror handler
-            if isinstance(exp_handler, int):
-                handler = default_handler or JsonErrorHandler()
-                handler.code = exp_handler
-                # replacing the handler so we only have to create the instance the first time
-                endpoint.exceptions[exp_class] = handler
-                return handler(exp, endpoint)
-            elif callable(exp_handler):
-                # TODO maybe give e the req and start response, maybe add
-                # a finished var to track if e handled everything
-                return exp_handler(exp, endpoint)
-            else:
-                # Handle 'simple' tuple based exception handler (not callable)
-                return (exp_handler.code, exp_handler.content_type,
-                        exp_handler.content, exp_handler.headers)
+    # todo: don't hardcode the jsonerror handler
+    if isinstance(exp_handler, int):
+        handler = default_handler or JsonErrorHandler()
+        handler.code = exp_handler
+        # replacing the handler so we only have to create the instance the first time
+        endpoint.exceptions[exp_class] = handler
+        return handler(exp, endpoint)
+    elif callable(exp_handler):
+        # TODO maybe give e the req and start response, maybe add
+        # a finished var to track if e handled everything
+        return exp_handler(exp, endpoint)
+    else:
+        # Handle 'simple' tuple based exception handler (not callable)
+        return (exp_handler.code, exp_handler.content_type,
+                exp_handler.content, exp_handler.headers)
 
     # endpoint does not define a handler, return None
     return None

@@ -387,8 +387,9 @@ class ServicePublisher(object):
 
             if not match:
                 # TODO: Handle HTTPException in new world exceptions
-                raise HTTPException(404, message='endpoint %s not defined' %
-                                                 endpoint.name)
+                endpoint = None
+                msg = 'endpoint "%s" not defined' % req.path
+                raise HTTPException(404, message=msg)
                 #
                 # Fallback app is untested with WSGI/EVENTLET
                 # FIXTHIS!!
@@ -443,13 +444,12 @@ class ServicePublisher(object):
             #
             if endpoint:
                 try:
-                    error_response = handle_exception(
-                        e, endpoint,
+                    error_response = handle_exception(e, endpoint,
                         self._options.default_error_handler)
                 except (Exception), e:
                     _log.exception(
-                        "Endpoint %s failed to handle exception" % endpoint.name
-                    )
+                        "Endpoint %s failed to handle exception" %
+                        endpoint.name)
                     logged_trace = True
 
             if not error_response:
