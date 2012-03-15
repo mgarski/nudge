@@ -65,11 +65,6 @@ class Json(object):
     def __call__(self, result):
         if result == None:
             raise HTTPException(404)
-        if isinstance(result, (types.ListType, types.TupleType)):
-            raise SecurityException(
-                'Results that encode as json arrays are not '+\
-                'allowed for security concerns'
-            )
         return Result(
             content=json_encode(result),
             content_type='application/json; charset=UTF-8',
